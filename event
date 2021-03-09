@@ -1,0 +1,58 @@
+<?php
+
+include 'Account.php';
+
+session_start();
+
+
+$payload = json_decode(file_get_contents('php://input'), $associative=true);
+
+switch ($payload['type']) {
+	case "deposit":
+		try{
+			$account = new Account($payload['destination']);
+			$account->deposit($payload['amount']);
+			$responseData = array("destination" => array("id" => $payload['destination'], "balance" => $account->getBalance()));
+			header('Content-Type: application/json');
+			print(json_encode($responseData));
+			http_response_code(201);
+		} catch (NotFoundException $e) {
+			$account = Account::createAccount($payload['destination'], $payload['amount']);
+			$responseData = array("destination" => array("id" => $payload['destination'], "balance" => $account->getBalance()));
+			header('Content-Type: application/json');
+			print(json_encode($responseData));
+			http_response_code(201);
+		}
+		break;
+	case "withdraw":
+		try{
+			$account = new Account($payload['origin']);
+			$account->withdraw($payload['amount']);
+			$responseData = array("origin" => array("id" => $payload['origin'], "balance" => $account->getBalance()));
+			header('Content-Type: application/json');
+			print(json_encode($responseData));
+			http_response_code(201);
+		} catch (NotFoundException $e) {
+			header('Content-Type: application/json');
+			print(json_encode(0));
+			http_response_code(404);
+		}
+		break;
+	case "transfer":
+		try{
+			$originAccount = new Account($payload['origin']);
+			$originAccount->withdraw($payload['amount']);
+			$destinationAccount = new Account($payload['destination']);
+			$destinationAccount->deposit($payload['amount']);
+			$responseData = array("origin" => array("id" => $payload['origin'], "balance" => $originAccount->getBalance()), 
+			                      "destination" => array("id" => $payload['destination'], "balance" => $destinationAccount->getBalance()));
+			header('Content-Type: application/json');
+			print(json_encode($responseData));
+			http_response_code(201);
+		} catch (NotFoundException $e) {
+			header('Content-Type: application/json');
+			print(json_encode(0));
+			http_response_code(404);
+		}
+}
+?>

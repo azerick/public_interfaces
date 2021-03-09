@@ -1,0 +1,12 @@
+<?php
+
+include "Account.php";
+
+Account::resetAccountList();
+
+// Forces HTTP Status code
+header('Content-Type: application/json');
+print("OK");
+http_response_code(200);
+
+?>

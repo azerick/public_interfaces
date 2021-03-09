@@ -1,0 +1,17 @@
+<?php
+
+include 'Account.php';
+
+$account_id = $_GET["account_id"];
+
+try {
+	$account = new Account($account_id);
+	header('Content-Type: application/json');
+	print($account->getBalance());
+	http_response_code(200);
+} catch (NotFoundException $e) {
+	header('Content-Type: application/json');
+	print(json_encode(0));
+	http_response_code(404);
+}
+?>
